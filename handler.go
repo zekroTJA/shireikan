@@ -16,13 +16,14 @@ import (
 type ErrorType int
 
 const (
-	ErrTypGuildPrefixGetter ErrorType = iota // error from guild prefix getter function
-	ErrTypGetChannel                         // error getting channel object
-	ErrTypGetGuild                           // error getting guild object
-	ErrTypCommandNotFound                    // command was not found by specified invoke
-	ErrTypNotExecutableInDM                  // command which is specified as non-executable in DM got executed in a DM channel
-	ErrTypMiddleware                         // middleware handler returned an error
-	ErrTypCommandExec                        // command handler returned an error
+	ErrTypGuildPrefixGetter    ErrorType = iota // error from guild prefix getter function
+	ErrTypGetChannel                            // error getting channel object
+	ErrTypGetGuild                              // error getting guild object
+	ErrTypCommandNotFound                       // command was not found by specified invoke
+	ErrTypNotExecutableInDM                     // command which is specified as non-executable in DM got executed in a DM channel
+	ErrTypMiddleware                            // middleware handler returned an error
+	ErrTypCommandExec                           // command handler returned an error
+	ErrTypDeleteCommandMessage                  // deleting command message failed
 )
 
 var (
@@ -37,6 +38,7 @@ type Config struct {
 	AllowBots             bool   `json:"allow_bots"`               // Allow bot accounts to execute commands
 	ExecuteOnEdit         bool   `json:"execute_on_edit"`          // Execute command handler when a message was edited
 	UseDefaultHelpCommand bool   `json:"use_default_help_command"` // Whether or not to use default help command
+	DeleteMessageAfter    bool   `json:"delete_message_after"`     // Delete command message after command has processed
 
 	// OnError is called when the command handler failed
 	// or retrieved an error form a middleware or command
@@ -279,5 +281,12 @@ func (h *handler) messageHandler(s *discordgo.Session, msg *discordgo.Message, i
 	if err = cmd.Exec(ctx); err != nil {
 		h.config.OnError(ctx, ErrTypCommandExec, err)
 		return
+	}
+
+	if h.config.DeleteMessageAfter {
+		if err = s.ChannelMessageDelete(msg.ChannelID, msg.ID); err != nil {
+			h.config.OnError(ctx, ErrTypDeleteCommandMessage, err)
+			return
+		}
 	}
 }

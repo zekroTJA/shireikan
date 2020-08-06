@@ -13,8 +13,8 @@ This command handler is strongly inspired by [Lukaesebrot's](https://github.com/
 ## To-Do
 
 - [x] Add Argument Transformation Functions
-- [ ] Add delete Command Message after Option
-- [ ] Add default Help Command
+- [x] Add delete Command Message after Option
+- [x] Add default Help Command
 - [ ] Add Markdown manpage generation
 - [ ] Add Unit-Tests
 - [ ] Add more Code Documentation
