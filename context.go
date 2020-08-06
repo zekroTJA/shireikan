@@ -49,15 +49,20 @@ type Context interface {
 	// discordgo.MessageUpdate event.
 	IsEdit() bool
 
-	// Get tries to retrieve an object from the
+	// GetObject tries to retrieve an object from the
 	// context's object map. The retrieved value
 	// is returned. If no value could be retrieved,
 	// nil is returned.
-	Get(key string) interface{}
+	//
+	// This function must return a value when it
+	// is not available in the contexts object
+	// map but available in the command handlers
+	// global object map.
+	GetObject(key string) interface{}
 
-	// Set sets an object or value to the context's
+	// SetObject sets an object or value to the context's
 	// object map with the passed key.
-	Set(key string, val interface{})
+	SetObject(key string, val interface{})
 
 	// Reply sends a message with the passed content
 	// to the channel where the command was sent into.
@@ -122,16 +127,25 @@ func (ctx *context) IsEdit() bool {
 	return ctx.isEdit
 }
 
-func (ctx *context) Get(key string) interface{} {
+func (ctx *context) GetObject(key string) interface{} {
 	if ctx.objectMap == nil {
 		return nil
 	}
 
-	val, _ := ctx.objectMap.Load(key)
+	val, ok := ctx.objectMap.Load(key)
+
+	if !ok {
+		vHandler, _ := ctx.objectMap.Load(ObjectMapKeyHandler)
+		handler, ok := vHandler.(Handler)
+		if ok {
+			val = handler.GetObject(key)
+		}
+	}
+
 	return val
 }
 
-func (ctx *context) Set(key string, val interface{}) {
+func (ctx *context) SetObject(key string, val interface{}) {
 	if ctx.objectMap == nil {
 		ctx.objectMap = &sync.Map{}
 	}

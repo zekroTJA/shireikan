@@ -9,3 +9,7 @@ var (
 	EmbedColorDefault = 0x03A9F4
 	EmbedColorError   = 0xe53935
 )
+
+const (
+	ObjectMapKeyHandler = "cmdhandler"
+)

@@ -6,7 +6,7 @@ type Test struct {
 }
 
 func (m *Test) Handle(cmd shireikan.Command, ctx shireikan.Context) (error, bool) {
-	ctx.Set("test", "this is a test object")
+	ctx.SetObject("test", "this is a test object")
 
 	return nil, true
 }

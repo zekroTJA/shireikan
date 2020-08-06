@@ -92,6 +92,14 @@ type Handler interface {
 	// the command register by invoke. If the
 	// command could not be found, false is returned.
 	GetCommand(invoke string) (Command, bool)
+
+	// GetObject returns a value from the handlers
+	// global object map by given key.
+	GetObject(key string) interface{}
+
+	// SetObject sets a value to the handlers global
+	// object map by given key.
+	SetObject(key string, val interface{})
 }
 
 // handler is the default implementation of Handler.
@@ -100,6 +108,7 @@ type handler struct {
 	cmdMap       map[string]Command
 	cmdInstances []Command
 	middlewares  []Middleware
+	objectMap    *sync.Map
 }
 
 // NewHandler returns a new instance of the default
@@ -119,6 +128,7 @@ func NewHandler(cfg *Config) Handler {
 		config:       cfg,
 		cmdMap:       make(map[string]Command),
 		cmdInstances: make([]Command, 0),
+		objectMap:    &sync.Map{},
 	}
 
 	if cfg.UseDefaultHelpCommand {
@@ -176,6 +186,15 @@ func (h *handler) GetCommand(invoke string) (Command, bool) {
 
 	cmd, ok := h.cmdMap[invoke]
 	return cmd, ok
+}
+
+func (h *handler) GetObject(key string) interface{} {
+	val, _ := h.objectMap.Load(key)
+	return val
+}
+
+func (h *handler) SetObject(key string, val interface{}) {
+	h.objectMap.Store(key, val)
 }
 
 // messageHandler is called from the message create and
@@ -265,7 +284,7 @@ func (h *handler) messageHandler(s *discordgo.Session, msg *discordgo.Message, i
 	}
 
 	ctx.objectMap = &sync.Map{}
-	ctx.Set("cmdhandler", h)
+	ctx.SetObject(ObjectMapKeyHandler, h)
 
 	for _, mw := range h.middlewares {
 		err, next := mw.Handle(cmd, ctx)

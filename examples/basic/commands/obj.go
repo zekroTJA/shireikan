@@ -38,7 +38,7 @@ func (c *Object) IsExecutableInDMChannels() bool {
 }
 
 func (c *Object) Exec(ctx shireikan.Context) error {
-	obj, _ := ctx.Get("test").(string)
+	obj, _ := ctx.GetObject("test").(string)
 	_, err := ctx.GetSession().ChannelMessageSend(ctx.GetChannel().ID,
 		fmt.Sprintf("Retrieved Object:\n```%s```", obj))
 	return err
