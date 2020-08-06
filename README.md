@@ -12,6 +12,7 @@ This command handler is strongly inspired by [Lukaesebrot's](https://github.com/
 
 ## To-Do
 
+- [x] Add Argument Transformation Functions
 - [ ] Add default Help Command
 - [ ] Add Markdown manpage generation
 - [ ] Add Unit-Tests
