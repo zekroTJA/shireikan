@@ -31,11 +31,12 @@ var (
 
 // Config wraps configuration values for the CommandHandler.
 type Config struct {
-	GeneralPrefix string `json:"general_prefix"`  // general and globally accessable prefix
-	InvokeToLower bool   `json:"invoke_to_lower"` // lowercase command invoke befor map matching
-	AllowDM       bool   `json:"allow_dm"`        // allow commands to be executed in DM and GroupDM channels
-	AllowBots     bool   `json:"allow_bots"`      // allow bot accounts to execute commands
-	ExecuteOnEdit bool   `json:"execute_on_edit"` // execute command handler when a message was edited
+	GeneralPrefix         string `json:"general_prefix"`           // General and globally accessable prefix
+	InvokeToLower         bool   `json:"invoke_to_lower"`          // Lowercase command invoke befor map matching
+	AllowDM               bool   `json:"allow_dm"`                 // Allow commands to be executed in DM and GroupDM channels
+	AllowBots             bool   `json:"allow_bots"`               // Allow bot accounts to execute commands
+	ExecuteOnEdit         bool   `json:"execute_on_edit"`          // Execute command handler when a message was edited
+	UseDefaultHelpCommand bool   `json:"use_default_help_command"` // Whether or not to use default help command
 
 	// OnError is called when the command handler failed
 	// or retrieved an error form a middleware or command
@@ -84,6 +85,11 @@ type Handler interface {
 	// GetCommandInstances returns an array of all
 	// registered command instances.
 	GetCommandInstances() []Command
+
+	// GetCommand returns a command instance form
+	// the command register by invoke. If the
+	// command could not be found, false is returned.
+	GetCommand(invoke string) (Command, bool)
 }
 
 // handler is the default implementation of Handler.
@@ -107,16 +113,25 @@ func NewHandler(cfg *Config) Handler {
 		}
 	}
 
-	return &handler{
+	handler := &handler{
 		config:       cfg,
 		cmdMap:       make(map[string]Command),
 		cmdInstances: make([]Command, 0),
 	}
+
+	if cfg.UseDefaultHelpCommand {
+		handler.RegisterCommand(&defaultHelpCommand{})
+	}
+
+	return handler
 }
 
 func (h *handler) RegisterCommand(cmd Command) {
 	h.cmdInstances = append(h.cmdInstances, cmd)
 	for _, invoke := range cmd.GetInvokes() {
+		if h.config.InvokeToLower {
+			invoke = strings.ToLower(invoke)
+		}
 		if _, ok := h.cmdMap[invoke]; ok {
 			panic(fmt.Sprintf("invoke already '%s' already registered", invoke))
 		}
@@ -152,10 +167,19 @@ func (h *handler) GetCommandInstances() []Command {
 	return h.cmdInstances
 }
 
+func (h *handler) GetCommand(invoke string) (Command, bool) {
+	if h.config.InvokeToLower {
+		invoke = strings.ToLower(invoke)
+	}
+
+	cmd, ok := h.cmdMap[invoke]
+	return cmd, ok
+}
+
 // messageHandler is called from the message create and
 // message update events of discordgo.
 func (h *handler) messageHandler(s *discordgo.Session, msg *discordgo.Message, isEdit bool) {
-	if msg.Author.ID == s.State.User.ID {
+	if msg.Author == nil || msg.Author.ID == s.State.User.ID {
 		return
 	}
 
@@ -206,10 +230,12 @@ func (h *handler) messageHandler(s *discordgo.Session, msg *discordgo.Message, i
 		return
 	}
 
-	if ctx.guild, err = s.State.Guild(msg.GuildID); err != nil {
-		if ctx.guild, err = s.Guild(msg.GuildID); err != nil {
-			h.config.OnError(ctx, ErrTypGetGuild, err)
-			return
+	if !ctx.isDM {
+		if ctx.guild, err = s.State.Guild(msg.GuildID); err != nil {
+			if ctx.guild, err = s.Guild(msg.GuildID); err != nil {
+				h.config.OnError(ctx, ErrTypGetGuild, err)
+				return
+			}
 		}
 	}
 
@@ -223,13 +249,9 @@ func (h *handler) messageHandler(s *discordgo.Session, msg *discordgo.Message, i
 	invoke := args[0][len(usedPrefix):]
 	args = args[1:]
 
-	if h.config.InvokeToLower {
-		invoke = strings.ToLower(invoke)
-	}
-
 	ctx.args = ArgumentList(args)
 
-	cmd, ok := h.cmdMap[invoke]
+	cmd, ok := h.GetCommand(invoke)
 	if !ok {
 		h.config.OnError(ctx, ErrTypCommandNotFound, ErrCommandNotFound)
 		return

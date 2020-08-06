@@ -31,6 +31,10 @@ type Context interface {
 	// where the command was sent.
 	GetGuild() *discordgo.Guild
 
+	// GetMember returns the user object
+	// of the author of the command message.
+	GetUser() *discordgo.User
+
 	// GetMember returns the member object
 	// of the author of the command message.
 	GetMember() *discordgo.Member
@@ -54,6 +58,19 @@ type Context interface {
 	// Set sets an object or value to the context's
 	// object map with the passed key.
 	Set(key string, val interface{})
+
+	// Reply sends a message with the passed content
+	// to the channel where the command was sent into.
+	Reply(content string) (*discordgo.Message, error)
+
+	// Reply sends a message with the passed embed
+	// to the channel where the command was sent into.
+	ReplyEmbed(embed *discordgo.MessageEmbed) (*discordgo.Message, error)
+
+	// ReplyEmbedError sends a pre-constructed embed
+	// as error message to the channel where the command
+	// was sent into.
+	ReplyEmbedError(content, title string) (*discordgo.Message, error)
 }
 
 // context is the default implementation of Context.
@@ -89,6 +106,10 @@ func (ctx *context) GetGuild() *discordgo.Guild {
 	return ctx.guild
 }
 
+func (ctx *context) GetUser() *discordgo.User {
+	return ctx.message.Author
+}
+
 func (ctx *context) GetMember() *discordgo.Member {
 	return ctx.member
 }
@@ -116,4 +137,20 @@ func (ctx *context) Set(key string, val interface{}) {
 	}
 
 	ctx.objectMap.Store(key, val)
+}
+
+func (ctx *context) Reply(content string) (*discordgo.Message, error) {
+	return ctx.session.ChannelMessageSend(ctx.channel.ID, content)
+}
+
+func (ctx *context) ReplyEmbed(embed *discordgo.MessageEmbed) (*discordgo.Message, error) {
+	return ctx.session.ChannelMessageSendEmbed(ctx.channel.ID, embed)
+}
+
+func (ctx *context) ReplyEmbedError(content, title string) (*discordgo.Message, error) {
+	return ctx.ReplyEmbed(&discordgo.MessageEmbed{
+		Title:       title,
+		Description: content,
+		Color:       EmbedColorError,
+	})
 }

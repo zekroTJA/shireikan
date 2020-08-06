@@ -32,11 +32,12 @@ func main() {
 	}()
 
 	handler := shireikan.NewHandler(&shireikan.Config{
-		GeneralPrefix: "!",
-		AllowBots:     false,
-		AllowDM:       true,
-		ExecuteOnEdit: true,
-		InvokeToLower: true,
+		GeneralPrefix:         "!",
+		AllowBots:             false,
+		AllowDM:               true,
+		ExecuteOnEdit:         true,
+		InvokeToLower:         true,
+		UseDefaultHelpCommand: true,
 		OnError: func(ctx shireikan.Context, typ shireikan.ErrorType, err error) {
 			log.Printf("[ERR] [%d] %s", typ, err.Error())
 		},
