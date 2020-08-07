@@ -1,4 +1,4 @@
-# shireikan &nbsp; [![](https://img.shields.io/badge/docs-pkg.do.dev-cyan?logo=go&logoColor=white)](https://pkg.go.dev/github.com/zekroTJA/shireikan?tab=doc)
+# shireikan &nbsp; [![](https://img.shields.io/badge/docs-pkg.do.dev-blue?logo=go&logoColor=white)](https://pkg.go.dev/github.com/zekroTJA/shireikan?tab=doc)
 
 司令官 - A prototype, object-oriented command handler for discordgo.
 
