@@ -52,3 +52,35 @@ func (al ArgumentList) Get(i int) Argument {
 
 	return Argument(al[i])
 }
+
+// IndexOf returns the index of v in arr.
+// If not found, the returned index is -1.
+func (arr ArgumentList) IndexOf(v string) int {
+	for i, s := range arr {
+		if v == s {
+			return i
+		}
+	}
+
+	return -1
+}
+
+// Contains returns true when v is included
+// in arr.
+func (arr ArgumentList) Contains(v string) bool {
+	return arr.IndexOf(v) > -1
+}
+
+// Slice returns a new array sliced at i by
+// the range of r.
+func (arr ArgumentList) Splice(i, r int) ArgumentList {
+	l := len(arr)
+	if i >= l {
+		return arr
+	}
+	if i+r >= l {
+		return arr[:i]
+	}
+
+	return append(arr[:i], arr[i+r:]...)
+}
