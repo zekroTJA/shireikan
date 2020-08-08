@@ -71,7 +71,7 @@ func (arr ArgumentList) Contains(v string) bool {
 	return arr.IndexOf(v) > -1
 }
 
-// Slice returns a new array sliced at i by
+// Splice returns a new array sliced at i by
 // the range of r.
 func (arr ArgumentList) Splice(i, r int) ArgumentList {
 	l := len(arr)
