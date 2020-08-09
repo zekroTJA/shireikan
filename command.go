@@ -52,13 +52,13 @@ type Command interface {
 }
 
 const (
-	GroupGlobalAdmin = "GLOBAL ADMIN"
-	GroupGuildAdmin  = "GUILD ADMIN"
-	GroupModeration  = "MODERATION"
-	GroupFun         = "FUN"
-	GroupGame        = "GAME"
-	GroupChat        = "CHAT"
-	GroupEtc         = "ETC"
-	GroupGeneral     = "GENERAL"
-	GroupGuildConfig = "GUILD CONFIG"
+	GroupGlobalAdmin = "GLOBAL ADMIN" // Global Admin Group
+	GroupGuildAdmin  = "GUILD ADMIN"  // Guild Admin Group
+	GroupModeration  = "MODERATION"   // Moderation Untilities Group
+	GroupFun         = "FUN"          // Fun Group
+	GroupGame        = "GAME"         // Game Group
+	GroupChat        = "CHAT"         // Chat Group
+	GroupEtc         = "ETC"          // Etc. Group
+	GroupGeneral     = "GENERAL"      // General Group
+	GroupGuildConfig = "GUILD CONFIG" // Guild Config Group
 )

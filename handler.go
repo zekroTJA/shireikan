@@ -11,19 +11,19 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-// ErrorType is the type of error occured in
+// ErrorType is the type of error occurred in
 // the command message handler.
 type ErrorType int
 
 const (
-	ErrTypGuildPrefixGetter    ErrorType = iota // error from guild prefix getter function
-	ErrTypGetChannel                            // error getting channel object
-	ErrTypGetGuild                              // error getting guild object
-	ErrTypCommandNotFound                       // command was not found by specified invoke
-	ErrTypNotExecutableInDM                     // command which is specified as non-executable in DM got executed in a DM channel
-	ErrTypMiddleware                            // middleware handler returned an error
-	ErrTypCommandExec                           // command handler returned an error
-	ErrTypDeleteCommandMessage                  // deleting command message failed
+	ErrTypGuildPrefixGetter    ErrorType = iota // Error from guild prefix getter function
+	ErrTypGetChannel                            // Error getting channel object
+	ErrTypGetGuild                              // Error getting guild object
+	ErrTypCommandNotFound                       // Command was not found by specified invoke
+	ErrTypNotExecutableInDM                     // Command which is specified as non-executable in DM got executed in a DM channel
+	ErrTypMiddleware                            // Middleware handler returned an error
+	ErrTypCommandExec                           // Command handler returned an error
+	ErrTypDeleteCommandMessage                  // Deleting command message failed
 )
 
 var (
@@ -32,7 +32,7 @@ var (
 
 // Config wraps configuration values for the CommandHandler.
 type Config struct {
-	GeneralPrefix         string `json:"general_prefix"`           // General and globally accessable prefix
+	GeneralPrefix         string `json:"general_prefix"`           // General and globally accessible prefix
 	InvokeToLower         bool   `json:"invoke_to_lower"`          // Lowercase command invoke befor map matching
 	AllowDM               bool   `json:"allow_dm"`                 // Allow commands to be executed in DM and GroupDM channels
 	AllowBots             bool   `json:"allow_bots"`               // Allow bot accounts to execute commands
@@ -309,7 +309,7 @@ func (h *handler) executeMiddlewares(cmd Command, ctx Context, layer MiddlewareL
 			continue
 		}
 
-		err, next := mw.Handle(cmd, ctx)
+		next, err := mw.Handle(cmd, ctx)
 		if err != nil {
 			h.config.OnError(ctx, ErrTypMiddleware, err)
 			return

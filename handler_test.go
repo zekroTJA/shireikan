@@ -88,7 +88,7 @@ func TestHandlerGetCommandInstances(t *testing.T) {
 	cmdInstances := h.GetCommandInstances()
 
 	if len(cmdInstances) != 1 {
-		t.Error("invalid ammount of command instances were registered")
+		t.Error("invalid amount of command instances were registered")
 	}
 
 	if cmdInstances[0] != cmdInstance {
@@ -272,8 +272,8 @@ func (c *testCmd) Exec(ctx Context) error {
 type testMiddleware struct {
 }
 
-func (m *testMiddleware) Handle(cmd Command, ctx Context) (error, bool) {
-	return nil, true
+func (m *testMiddleware) Handle(cmd Command, ctx Context) (bool, error) {
+	return true, nil
 }
 
 func (m *testMiddleware) GetLayer() MiddlewareLayer {

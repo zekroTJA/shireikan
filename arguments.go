@@ -55,8 +55,8 @@ func (al ArgumentList) Get(i int) Argument {
 
 // IndexOf returns the index of v in arr.
 // If not found, the returned index is -1.
-func (arr ArgumentList) IndexOf(v string) int {
-	for i, s := range arr {
+func (al ArgumentList) IndexOf(v string) int {
+	for i, s := range al {
 		if v == s {
 			return i
 		}
@@ -67,20 +67,20 @@ func (arr ArgumentList) IndexOf(v string) int {
 
 // Contains returns true when v is included
 // in arr.
-func (arr ArgumentList) Contains(v string) bool {
-	return arr.IndexOf(v) > -1
+func (al ArgumentList) Contains(v string) bool {
+	return al.IndexOf(v) > -1
 }
 
 // Splice returns a new array sliced at i by
 // the range of r.
-func (arr ArgumentList) Splice(i, r int) ArgumentList {
-	l := len(arr)
+func (al ArgumentList) Splice(i, r int) ArgumentList {
+	l := len(al)
 	if i >= l {
-		return arr
+		return al
 	}
 	if i+r >= l {
-		return arr[:i]
+		return al[:i]
 	}
 
-	return append(arr[:i], arr[i+r:]...)
+	return append(al[:i], al[i+r:]...)
 }
