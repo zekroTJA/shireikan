@@ -10,3 +10,7 @@ func (m *Test) Handle(cmd shireikan.Command, ctx shireikan.Context) (error, bool
 
 	return nil, true
 }
+
+func (m *Test) GetLayer() shireikan.MiddlewareLayer {
+	return shireikan.LayerBeforeCommand
+}

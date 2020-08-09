@@ -275,3 +275,7 @@ type testMiddleware struct {
 func (m *testMiddleware) Handle(cmd Command, ctx Context) (error, bool) {
 	return nil, true
 }
+
+func (m *testMiddleware) GetLayer() MiddlewareLayer {
+	return LayerBeforeCommand
+}

@@ -286,25 +286,35 @@ func (h *handler) messageHandler(s *discordgo.Session, msg *discordgo.Message, i
 	ctx.objectMap = &sync.Map{}
 	ctx.SetObject(ObjectMapKeyHandler, h)
 
-	for _, mw := range h.middlewares {
-		err, next := mw.Handle(cmd, ctx)
-		if err != nil {
-			h.config.OnError(ctx, ErrTypMiddleware, err)
-			return
-		}
-		if !next {
-			return
-		}
-	}
+	h.executeMiddlewares(cmd, ctx, LayerBeforeCommand)
 
 	if err = cmd.Exec(ctx); err != nil {
 		h.config.OnError(ctx, ErrTypCommandExec, err)
 		return
 	}
 
+	h.executeMiddlewares(cmd, ctx, LayerAfterCommand)
+
 	if h.config.DeleteMessageAfter {
 		if err = s.ChannelMessageDelete(msg.ChannelID, msg.ID); err != nil {
 			h.config.OnError(ctx, ErrTypDeleteCommandMessage, err)
+			return
+		}
+	}
+}
+
+func (h *handler) executeMiddlewares(cmd Command, ctx Context, layer MiddlewareLayer) {
+	for _, mw := range h.middlewares {
+		if mw.GetLayer()&layer == 0 {
+			continue
+		}
+
+		err, next := mw.Handle(cmd, ctx)
+		if err != nil {
+			h.config.OnError(ctx, ErrTypMiddleware, err)
+			return
+		}
+		if !next {
 			return
 		}
 	}
