@@ -141,6 +141,10 @@ func TestHandlerMessageHandler(t *testing.T) {
 		msg.Content = "!ping"
 	})
 
+	testMessageHandler(t, true, func(msg *discordgo.Message) {
+		msg.Content = "test!ping"
+	})
+
 	testMessageHandler(t, false, func(msg *discordgo.Message) {
 		msg.Content = "!abc"
 	})
@@ -211,12 +215,12 @@ func makeConfig() *Config {
 		GeneralPrefix:         "!",
 		AllowBots:             false,
 		AllowDM:               false,
-		DeleteMessageAfter:    false,
+		DeleteMessageAfter:    true,
 		ExecuteOnEdit:         true,
 		InvokeToLower:         true,
 		UseDefaultHelpCommand: false,
 		GuildPrefixGetter: func(string) (string, error) {
-			return "", nil
+			return "test!", nil
 		},
 		OnError: func(_ Context, t ErrorType, err error) {
 			fmt.Printf("[%d] %s\n", t, err.Error())
