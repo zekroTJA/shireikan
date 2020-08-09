@@ -1,4 +1,4 @@
-# shireikan &nbsp; [![](https://img.shields.io/badge/docs-pkg.do.dev-blue?logo=go&logoColor=white)](https://pkg.go.dev/github.com/zekroTJA/shireikan?tab=doc) ![CI](https://github.com/zekroTJA/shireikan/workflows/CI/badge.svg)
+# shireikan &nbsp; [![](https://img.shields.io/badge/docs-pkg.do.dev-blue?logo=go&logoColor=white)](https://pkg.go.dev/github.com/zekroTJA/shireikan?tab=doc) ![CI](https://github.com/zekroTJA/shireikan/workflows/CI/badge.svg) [![Coverage Status](https://coveralls.io/repos/github/zekroTJA/shireikan/badge.svg?branch=master)](https://coveralls.io/github/zekroTJA/shireikan?branch=master)
 
 司令官 - A prototype, object-oriented command handler for discordgo.
 
@@ -12,12 +12,13 @@ This command handler is strongly inspired by [Lukaesebrot's](https://github.com/
 
 ## To-Do
 
+- [ ] Add Markdown manpage generation
+- [ ] Add more Code Documentation
+- [ ] Bring Unit Test Coverage up to at least 80%
 - [x] Add Argument Transformation Functions
 - [x] Add delete Command Message after Option
 - [x] Add default Help Command
-- [ ] Add Markdown manpage generation
-- [ ] Add Unit-Tests
-- [ ] Add more Code Documentation
+- [x] Add Unit Tests
 
 ---
 
