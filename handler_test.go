@@ -169,16 +169,16 @@ func testMessageHandler(t *testing.T,
 	h.RegisterCommand(cmd)
 
 	msg := &discordgo.Message{
-		ChannelID: "549871005321920513",
-		GuildID:   "526196711962705925",
+		ChannelID: getEnvOrDefault("CHANNEL_ID", "549871005321920513"),
+		GuildID:   getEnvOrDefault("GUILD_ID", "526196711962705925"),
 		Author: &discordgo.User{
-			ID:  "221905671296253953",
+			ID:  getEnvOrDefault("AUTHOR_ID", "221905671296253953"),
 			Bot: false,
 		},
 		Member: &discordgo.Member{
-			GuildID: "526196711962705925",
+			GuildID: getEnvOrDefault("GUILD_ID", "526196711962705925"),
 			User: &discordgo.User{
-				ID:  "221905671296253953",
+				ID:  getEnvOrDefault("AUTHOR_ID", "221905671296253953"),
 				Bot: false,
 			},
 		},
@@ -222,6 +222,14 @@ func makeConfig() *Config {
 			fmt.Printf("[%d] %s\n", t, err.Error())
 		},
 	}
+}
+
+func getEnvOrDefault(envKey, def string) string {
+	v := os.Getenv(envKey)
+	if v == "" {
+		v = def
+	}
+	return v
 }
 
 type testCmd struct {
