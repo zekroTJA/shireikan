@@ -1,7 +1,8 @@
 package shireikan
 
 import (
-	"log"
+	"fmt"
+	"os"
 	"testing"
 
 	"github.com/bwmarrin/discordgo"
@@ -135,26 +136,96 @@ func TestHandlerGetObject(t *testing.T) {
 	}
 }
 
+func TestHandlerMessageHandler(t *testing.T) {
+	testMessageHandler(t, true, func(msg *discordgo.Message) {
+		msg.Content = "!ping"
+	})
+
+	testMessageHandler(t, false, func(msg *discordgo.Message) {
+		msg.Content = "!abc"
+	})
+
+	testMessageHandler(t, false, func(msg *discordgo.Message) {
+		msg.Author.Bot = true
+		msg.Content = "!ping"
+	})
+}
+
 // -------------------------------
 // --- HELPER ---
+
+func testMessageHandler(t *testing.T,
+	cmdShallbeexecuted bool,
+	configurator func(msg *discordgo.Message)) {
+
+	t.Helper()
+
+	s, _ := discordgo.New("Bot " + os.Getenv("BOT_TOKEN"))
+
+	cExit := make(chan bool, 1)
+
+	cmd := &testCmd{}
+	h := NewHandler(makeConfig())
+	h.RegisterCommand(cmd)
+
+	msg := &discordgo.Message{
+		ChannelID: "549871005321920513",
+		GuildID:   "526196711962705925",
+		Author: &discordgo.User{
+			ID:  "221905671296253953",
+			Bot: false,
+		},
+		Member: &discordgo.Member{
+			GuildID: "526196711962705925",
+			User: &discordgo.User{
+				ID:  "221905671296253953",
+				Bot: false,
+			},
+		},
+	}
+
+	configurator(msg)
+
+	s.AddHandler(func(_ *discordgo.Session, e *discordgo.Ready) {
+		h.(*handler).messageHandler(s, msg, false)
+
+		if !cmd.WasExecuted && cmdShallbeexecuted {
+			t.Error("command was not executed")
+		} else if cmd.WasExecuted && !cmdShallbeexecuted {
+			t.Error("command was executed")
+		}
+
+		cExit <- true
+	})
+
+	err := s.Open()
+	if err != nil {
+		t.Error(err)
+	}
+
+	<-cExit
+}
 
 func makeConfig() *Config {
 	return &Config{
 		GeneralPrefix:         "!",
-		AllowBots:             true,
-		AllowDM:               true,
-		DeleteMessageAfter:    true,
+		AllowBots:             false,
+		AllowDM:               false,
+		DeleteMessageAfter:    false,
 		ExecuteOnEdit:         true,
 		InvokeToLower:         true,
-		UseDefaultHelpCommand: true,
+		UseDefaultHelpCommand: false,
 		GuildPrefixGetter: func(string) (string, error) {
 			return "", nil
 		},
-		OnError: func(Context, ErrorType, error) {},
+		OnError: func(_ Context, t ErrorType, err error) {
+			fmt.Printf("[%d] %s\n", t, err.Error())
+		},
 	}
 }
 
 type testCmd struct {
+	WasExecuted bool
 }
 
 func (c *testCmd) GetInvokes() []string {
@@ -186,7 +257,7 @@ func (c *testCmd) IsExecutableInDMChannels() bool {
 }
 
 func (c *testCmd) Exec(ctx Context) error {
-	log.Printf("%+v", ctx)
+	c.WasExecuted = true
 	return nil
 }
 
