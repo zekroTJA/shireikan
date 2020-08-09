@@ -1,4 +1,4 @@
-# shireikan &nbsp; [![](https://img.shields.io/badge/docs-pkg.do.dev-blue?logo=go&logoColor=white)](https://pkg.go.dev/github.com/zekroTJA/shireikan?tab=doc) ![CI](https://github.com/zekroTJA/shireikan/workflows/CI/badge.svg) [![Coverage Status](https://coveralls.io/repos/github/zekroTJA/shireikan/badge.svg?branch=master)](https://coveralls.io/github/zekroTJA/shireikan?branch=master)
+# shireikan &nbsp; [![](https://img.shields.io/badge/docs-pkg.do.dev-blue?logo=go&logoColor=white)](https://pkg.go.dev/github.com/zekroTJA/shireikan?tab=doc) ![CI](https://github.com/zekroTJA/shireikan/workflows/CI/badge.svg) [![Coverage Status](https://coveralls.io/repos/github/zekroTJA/shireikan/badge.svg?branch=master)](https://coveralls.io/github/zekroTJA/shireikan?branch=master) [![Go Report Card](https://goreportcard.com/badge/github.com/zekroTJA/shireikan)](https://goreportcard.com/report/github.com/zekroTJA/shireikan)
 
 司令官 - A prototype, object-oriented command handler for discordgo.
 
