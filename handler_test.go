@@ -1,6 +1,7 @@
 package shireikan
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"testing"
@@ -155,6 +156,97 @@ func TestHandlerMessageHandler(t *testing.T) {
 	})
 }
 
+func TestHandlerMiddleware(t *testing.T) {
+	s, _ := discordgo.New("Bot " + os.Getenv("BOT_TOKEN"))
+
+	cExit := make(chan bool, 1)
+
+	cmd := &testCmd{}
+	cfg := makeConfig()
+	cfg.DeleteMessageAfter = false
+	h := NewHandler(cfg)
+	h.RegisterCommand(cmd)
+
+	mwBefore := &testMiddleware{}
+	mwBefore.layer = LayerBeforeCommand
+	h.RegisterMiddleware(mwBefore)
+
+	mwAfter := &testMiddleware{}
+	mwAfter.layer = LayerAfterCommand
+	h.RegisterMiddleware(mwAfter)
+
+	msg := &discordgo.Message{
+		ChannelID: getEnvOrDefault("CHANNEL_ID", "549871005321920513"),
+		GuildID:   getEnvOrDefault("GUILD_ID", "526196711962705925"),
+		Author: &discordgo.User{
+			ID:  getEnvOrDefault("AUTHOR_ID", "221905671296253953"),
+			Bot: false,
+		},
+		Member: &discordgo.Member{
+			GuildID: getEnvOrDefault("GUILD_ID", "526196711962705925"),
+			User: &discordgo.User{
+				ID:  getEnvOrDefault("AUTHOR_ID", "221905671296253953"),
+				Bot: false,
+			},
+		},
+		Content: "!ping",
+	}
+
+	s.AddHandler(func(_ *discordgo.Session, e *discordgo.Ready) {
+		cmd.fail = true
+		h.(*handler).messageHandler(s, msg, false)
+
+		if !mwBefore.executed {
+			t.Error("brefore middleware was not executed")
+		}
+
+		if mwAfter.executed {
+			t.Error("after middleware was executed even if it should not be")
+		}
+
+		mwBefore.executed = false
+		mwAfter.executed = false
+
+		// ----------------------------------------------------
+
+		cmd.fail = false
+		h.(*handler).messageHandler(s, msg, false)
+
+		if !mwBefore.executed {
+			t.Error("brefore middleware was not executed")
+		}
+
+		if !mwAfter.executed {
+			t.Error("after middleware was not executed")
+		}
+
+		mwBefore.executed = false
+		mwAfter.executed = false
+
+		// ----------------------------------------------------
+
+		msg.Content = ""
+		h.(*handler).messageHandler(s, msg, false)
+
+		if mwBefore.executed {
+			t.Error("before middleware was executed even if it should not be")
+		}
+
+		if mwAfter.executed {
+			t.Error("after middleware was executed even if it should not be")
+		}
+
+		cExit <- true
+	})
+
+	err := s.Open()
+	if err != nil {
+		t.Error(err)
+	}
+
+	<-cExit
+}
+
 // -------------------------------
 // --- HELPER ---
 
@@ -193,9 +285,9 @@ func testMessageHandler(t *testing.T,
 	s.AddHandler(func(_ *discordgo.Session, e *discordgo.Ready) {
 		h.(*handler).messageHandler(s, msg, false)
 
-		if !cmd.WasExecuted && cmdShallbeexecuted {
+		if !cmd.wasExecuted && cmdShallbeexecuted {
 			t.Error("command was not executed")
-		} else if cmd.WasExecuted && !cmdShallbeexecuted {
+		} else if cmd.wasExecuted && !cmdShallbeexecuted {
 			t.Error("command was executed")
 		}
 
@@ -237,7 +329,8 @@ func getEnvOrDefault(envKey, def string) string {
 }
 
 type testCmd struct {
-	WasExecuted bool
+	wasExecuted bool
+	fail        bool
 }
 
 func (c *testCmd) GetInvokes() []string {
@@ -269,17 +362,25 @@ func (c *testCmd) IsExecutableInDMChannels() bool {
 }
 
 func (c *testCmd) Exec(ctx Context) error {
-	c.WasExecuted = true
+	c.wasExecuted = true
+
+	if c.fail {
+		return errors.New("test error")
+	}
+
 	return nil
 }
 
 type testMiddleware struct {
+	executed bool
+	layer    MiddlewareLayer
 }
 
 func (m *testMiddleware) Handle(cmd Command, ctx Context) (bool, error) {
+	m.executed = true
 	return true, nil
 }
 
 func (m *testMiddleware) GetLayer() MiddlewareLayer {
-	return LayerBeforeCommand
+	return m.layer
 }
