@@ -1,6 +1,7 @@
 package shireikan
 
 import (
+	"os"
 	"sync"
 	"testing"
 
@@ -124,6 +125,64 @@ func TestContextInitObjectMap(t *testing.T) {
 	}
 }
 
+func TestContextReply(t *testing.T) {
+	ctx := makeContext(false)
+	ctx.session = makeSession()
+
+	msg, err := ctx.Reply("test reply")
+	if err != nil {
+		t.Error("reply failed: ", err)
+	}
+
+	if msg.Content != "test reply" {
+		t.Error("reply had invalid content")
+	}
+}
+
+func TestContextReplyEmbed(t *testing.T) {
+	ctx := makeContext(false)
+	ctx.session = makeSession()
+
+	emb := &discordgo.MessageEmbed{
+		Title:       "test embed",
+		Description: "test description",
+	}
+
+	msg, err := ctx.ReplyEmbed(emb)
+	if err != nil {
+		t.Error("reply failed: ", err)
+	}
+
+	if len(msg.Embeds) != 1 {
+		t.Error("reply had no embed")
+	}
+
+	if msg.Embeds[0].Title != emb.Title || msg.Embeds[0].Description != emb.Description {
+		t.Error("reply had invalid embed")
+	}
+}
+
+func TestContextReplyEmbedError(t *testing.T) {
+	ctx := makeContext(false)
+	ctx.session = makeSession()
+
+	msg, err := ctx.ReplyEmbedError("test content", "test title")
+	if err != nil {
+		t.Error("reply failed: ", err)
+	}
+
+	if len(msg.Embeds) != 1 {
+		t.Error("reply had no embed")
+	}
+
+	if msg.Embeds[0].Title != "test title" ||
+		msg.Embeds[0].Description != "test content" ||
+		msg.Embeds[0].Color != EmbedColorError {
+
+		t.Error("reply had invalid embed")
+	}
+}
+
 // -------------------------------
 // --- HELPER ---
 
@@ -134,7 +193,7 @@ func makeContext(initObjectMap bool) *context {
 		},
 		args: ArgumentList([]string{"a", "b", "c"}),
 		channel: &discordgo.Channel{
-			ID: "test_channel",
+			ID: getEnvOrDefault("CHANNEL_ID", "549871005321920513"),
 		},
 		guild: &discordgo.Guild{
 			ID: "test_guild",
@@ -163,4 +222,9 @@ func makeContext(initObjectMap bool) *context {
 	}
 
 	return ctx
+}
+
+func makeSession() *discordgo.Session {
+	s, _ := discordgo.New("Bot " + os.Getenv("BOT_TOKEN"))
+	return s
 }
