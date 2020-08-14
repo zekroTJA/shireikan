@@ -17,7 +17,9 @@ type Middleware interface {
 
 	// Handle is called right before the execution of
 	// the command handler and is getting passed the
-	// Command instance and the Context.
+	// Command instance and the Context. Also, it is
+	// getting passed the layer where the handler was
+	// executed.
 	//
 	// When the returned bool is false, the following
 	// command handler will not be executed.
@@ -25,7 +27,7 @@ type Middleware interface {
 	// An error should only be returned when the
 	// execution of the middleware handler failed
 	// unexpectedly.
-	Handle(cmd Command, ctx Context) (bool, error)
+	Handle(cmd Command, ctx Context, layer MiddlewareLayer) (bool, error)
 
 	// GetLayer returns the layer(s) when the middleware
 	// shall be executed.

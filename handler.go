@@ -309,7 +309,7 @@ func (h *handler) executeMiddlewares(cmd Command, ctx Context, layer MiddlewareL
 			continue
 		}
 
-		next, err := mw.Handle(cmd, ctx)
+		next, err := mw.Handle(cmd, ctx, layer)
 		if err != nil {
 			h.config.OnError(ctx, ErrTypMiddleware, err)
 			return

@@ -376,7 +376,7 @@ type testMiddleware struct {
 	layer    MiddlewareLayer
 }
 
-func (m *testMiddleware) Handle(cmd Command, ctx Context) (bool, error) {
+func (m *testMiddleware) Handle(cmd Command, ctx Context, layer MiddlewareLayer) (bool, error) {
 	m.executed = true
 	return true, nil
 }

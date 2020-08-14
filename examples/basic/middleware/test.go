@@ -7,7 +7,7 @@ type Test struct {
 }
 
 // Handle is the Middlewares handler.
-func (m *Test) Handle(cmd shireikan.Command, ctx shireikan.Context) (bool, error) {
+func (m *Test) Handle(cmd shireikan.Command, ctx shireikan.Context, layer shireikan.MiddlewareLayer) (bool, error) {
 	ctx.SetObject("test", "this is a test object")
 
 	return true, nil
