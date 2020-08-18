@@ -3,9 +3,9 @@ package shireikan
 // SubPermission wraps information about
 // a sub permissions of commands.
 type SubPermission struct {
-	Term        string
-	Explicit    bool
-	Description string
+	Term        string `json:"term"`
+	Explicit    bool   `json:"explicit"`
+	Description string `json:"description"`
 }
 
 // Command describes the functionalities of a
