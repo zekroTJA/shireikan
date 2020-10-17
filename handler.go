@@ -286,14 +286,18 @@ func (h *handler) messageHandler(s *discordgo.Session, msg *discordgo.Message, i
 	ctx.objectMap = &sync.Map{}
 	ctx.SetObject(ObjectMapKeyHandler, h)
 
-	h.executeMiddlewares(cmd, ctx, LayerBeforeCommand)
+	if !h.executeMiddlewares(cmd, ctx, LayerBeforeCommand) {
+		return
+	}
 
 	if err = cmd.Exec(ctx); err != nil {
 		h.config.OnError(ctx, ErrTypCommandExec, err)
 		return
 	}
 
-	h.executeMiddlewares(cmd, ctx, LayerAfterCommand)
+	if !h.executeMiddlewares(cmd, ctx, LayerAfterCommand) {
+		return
+	}
 
 	if h.config.DeleteMessageAfter {
 		if err = s.ChannelMessageDelete(msg.ChannelID, msg.ID); err != nil {
@@ -303,7 +307,7 @@ func (h *handler) messageHandler(s *discordgo.Session, msg *discordgo.Message, i
 	}
 }
 
-func (h *handler) executeMiddlewares(cmd Command, ctx Context, layer MiddlewareLayer) {
+func (h *handler) executeMiddlewares(cmd Command, ctx Context, layer MiddlewareLayer) bool {
 	for _, mw := range h.middlewares {
 		if mw.GetLayer()&layer == 0 {
 			continue
@@ -312,10 +316,12 @@ func (h *handler) executeMiddlewares(cmd Command, ctx Context, layer MiddlewareL
 		next, err := mw.Handle(cmd, ctx, layer)
 		if err != nil {
 			h.config.OnError(ctx, ErrTypMiddleware, err)
-			return
+			return false
 		}
 		if !next {
-			return
+			return false
 		}
 	}
+
+	return true
 }
