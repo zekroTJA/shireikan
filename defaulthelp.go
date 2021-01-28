@@ -133,8 +133,8 @@ func (c *defaultHelpCommand) Exec(ctx Context) error {
 					expl = "E"
 				}
 
-				txt = fmt.Sprintf("%s`[%s]` %s.%s - *%s*\n",
-					txt, expl, cmd.GetDomainName(), rule.Term, rule.Description)
+				txt = fmt.Sprintf("%s`[%s]` %s - *%s*\n",
+					txt, expl, getTermAssembly(cmd, rule.Term), rule.Description)
 			}
 
 			emb.Fields = append(emb.Fields, &discordgo.MessageEmbedField{
@@ -161,4 +161,11 @@ func (c *defaultHelpCommand) Exec(ctx Context) error {
 	}
 
 	return err
+}
+
+func getTermAssembly(cmd Command, term string) string {
+	if strings.HasPrefix(term, "/") {
+		return term[1:]
+	}
+	return cmd.GetDomainName() + "." + term
 }
