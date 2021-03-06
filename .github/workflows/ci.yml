@@ -28,7 +28,7 @@ jobs:
     - name: Run Tests
       env:
         BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-      run: go test -race -covermode atomic -coverprofile=profile.cov
+      run: go test -v -race -covermode atomic -coverprofile=profile.cov
 
     - name: Send coverage
       uses: shogo82148/actions-goveralls@v1
