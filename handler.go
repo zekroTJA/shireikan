@@ -204,7 +204,7 @@ func (h *handler) messageHandler(s *discordgo.Session, msg *discordgo.Message, i
 		return
 	}
 
-	if len(msg.Content) < 2 {
+	if len(msg.Content) < 1 {
 		return
 	}
 
@@ -224,6 +224,8 @@ func (h *handler) messageHandler(s *discordgo.Session, msg *discordgo.Message, i
 	usedPrefix := ""
 	if strings.HasPrefix(msg.Content, h.config.GeneralPrefix) {
 		usedPrefix = h.config.GeneralPrefix
+	} else if ok, prefix := hasPrefixMention(s, msg.Content); ok {
+		usedPrefix = prefix
 	} else {
 		guildPrefix, err := h.config.GuildPrefixGetter(msg.GuildID)
 		if err != nil {
@@ -235,15 +237,15 @@ func (h *handler) messageHandler(s *discordgo.Session, msg *discordgo.Message, i
 		}
 	}
 
-	if usedPrefix == "" {
-		return
-	}
-
 	if ctx.channel, err = s.State.Channel(msg.ChannelID); err != nil {
 		if ctx.channel, err = s.Channel(msg.ChannelID); err != nil {
 			h.config.OnError(ctx, ErrTypGetChannel, err)
 			return
 		}
+	}
+
+	if usedPrefix == "" && ctx.channel.Type != discordgo.ChannelTypeDM {
+		return
 	}
 
 	ctx.isDM = ctx.channel.Type == discordgo.ChannelTypeDM || ctx.channel.Type == discordgo.ChannelTypeGroupDM
