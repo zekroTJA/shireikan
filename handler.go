@@ -262,14 +262,16 @@ func (h *handler) messageHandler(s *discordgo.Session, msg *discordgo.Message, i
 		}
 	}
 
-	args := argsRx.FindAllString(msg.Content, -1)
+	content := msg.Content[len(usedPrefix):]
+
+	args := argsRx.FindAllString(content, -1)
 	for i, k := range args {
 		if strings.Contains(k, "\"") {
 			args[i] = strings.Replace(k, "\"", "", -1)
 		}
 	}
 
-	invoke := args[0][len(usedPrefix):]
+	invoke := args[0]
 	args = args[1:]
 
 	ctx.args = ArgumentList(args)
