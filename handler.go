@@ -265,6 +265,11 @@ func (h *handler) messageHandler(s *discordgo.Session, msg *discordgo.Message, i
 	content := msg.Content[len(usedPrefix):]
 
 	args := argsRx.FindAllString(content, -1)
+
+	if len(args) == 0 {
+		return
+	}
+
 	for i, k := range args {
 		if strings.Contains(k, "\"") {
 			args[i] = strings.Replace(k, "\"", "", -1)
