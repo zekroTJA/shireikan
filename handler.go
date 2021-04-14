@@ -68,10 +68,6 @@ type Config struct {
 // Handler specifies a command register and handler.
 type Handler interface {
 
-	// RegisterCommand registers the passed
-	// Command instance.
-	RegisterCommand(cmd Command)
-
 	// Register is shorthand for RegisterMiddleware
 	// or RegisterCommand and automatically choses
 	// depending on the implementation the required
@@ -80,6 +76,10 @@ type Handler interface {
 	// Panics if an instance is passed which neither
 	// implements Command nor Middleware interface.
 	Register(v interface{})
+
+	// RegisterCommand registers the passed
+	// Command instance.
+	RegisterCommand(cmd Command)
 
 	// RegisterMiddleware registers the
 	// passed middleware instance.
