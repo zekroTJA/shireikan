@@ -80,6 +80,7 @@ type Context interface {
 
 // context is the default implementation of Context.
 type context struct {
+	handler   Handler
 	session   *discordgo.Session
 	args      ArgumentList
 	message   *discordgo.Message
@@ -127,22 +128,17 @@ func (ctx *context) IsEdit() bool {
 	return ctx.isEdit
 }
 
-func (ctx *context) GetObject(key string) interface{} {
-	if ctx.objectMap == nil {
-		return nil
+func (ctx *context) GetObject(key string) (val interface{}) {
+	var ok bool
+	if ctx.objectMap != nil {
+		val, ok = ctx.objectMap.Load(key)
 	}
-
-	val, ok := ctx.objectMap.Load(key)
 
 	if !ok {
-		vHandler, _ := ctx.objectMap.Load(ObjectMapKeyHandler)
-		handler, ok := vHandler.(Handler)
-		if ok {
-			val = handler.GetObject(key)
-		}
+		val = ctx.handler.GetObject(key)
 	}
 
-	return val
+	return
 }
 
 func (ctx *context) SetObject(key string, val interface{}) {

@@ -7,9 +7,10 @@ import (
 	"syscall"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/sarulabs/di/v2"
 	"github.com/zekroTJA/shireikan"
-	"github.com/zekroTJA/shireikan/examples/ratelimit/commands"
-	"github.com/zekroTJA/shireikan/middleware/ratelimit"
+	"github.com/zekroTJA/shireikan/examples/di/commands"
+	"github.com/zekroTJA/shireikan/examples/di/database"
 )
 
 func main() {
@@ -31,6 +32,14 @@ func main() {
 		<-sc
 	}()
 
+	diBuilder, _ := di.NewBuilder()
+	diBuilder.Add(di.Def{
+		Name: "db",
+		Build: func(ctn di.Container) (interface{}, error) {
+			return &database.TestDB{}, nil
+		},
+	})
+
 	handler := shireikan.New(&shireikan.Config{
 		GeneralPrefix:         "!",
 		AllowBots:             false,
@@ -41,11 +50,10 @@ func main() {
 		OnError: func(ctx shireikan.Context, typ shireikan.ErrorType, err error) {
 			log.Printf("[ERR] [%d] %s", typ, err.Error())
 		},
+		ObjectContainer: diBuilder.Build(),
 	})
 
-	handler.Register(ratelimit.New())
-
-	handler.Register(&commands.Ping{})
+	handler.Register(&commands.Object{})
 
 	handler.Setup(session)
 }

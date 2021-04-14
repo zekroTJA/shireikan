@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/sarulabs/di/v2"
 )
 
 func TestContextGetSession(t *testing.T) {
@@ -104,7 +105,7 @@ func TestContextGetObjectGlobal(t *testing.T) {
 }
 
 func TestContextInitObjectMap(t *testing.T) {
-	ctx := makeContext(false)
+	ctx := makeContext(true)
 
 	ctx.SetObject("test", "test")
 	if ctx.objectMap == nil {
@@ -118,7 +119,7 @@ func TestContextInitObjectMap(t *testing.T) {
 		t.Error("recovered value was invalid")
 	}
 
-	ctx = makeContext(false)
+	ctx = makeContext(true)
 	vi := ctx.GetObject("test")
 	if vi != nil {
 		t.Error("recovered value when object map is not initialized shall be nil")
@@ -212,13 +213,14 @@ func makeContext(initObjectMap bool) *context {
 	}
 
 	if initObjectMap {
-		handler := &handler{
-			objectMap: &sync.Map{},
-		}
-		handler.objectMap.Store("test_handler", "test_value")
+		b, _ := di.NewBuilder()
+		b.Set("test_handler", "test_value")
 
-		ctx.objectMap = &sync.Map{}
-		ctx.objectMap.Store(ObjectMapKeyHandler, handler)
+		handler := &handler{
+			objectMap:       &sync.Map{},
+			objectContainer: b.Build(),
+		}
+		ctx.handler = handler
 	}
 
 	return ctx

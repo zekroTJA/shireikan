@@ -31,7 +31,7 @@ func main() {
 		<-sc
 	}()
 
-	handler := shireikan.NewHandler(&shireikan.Config{
+	handler := shireikan.New(&shireikan.Config{
 		GeneralPrefix:         "!",
 		AllowBots:             false,
 		AllowDM:               true,
@@ -43,10 +43,10 @@ func main() {
 		},
 	})
 
-	handler.RegisterMiddleware(&middleware.Test{})
+	handler.Register(&middleware.Test{})
 
-	handler.RegisterCommand(&commands.Ping{})
-	handler.RegisterCommand(&commands.Object{})
+	handler.Register(&commands.Ping{})
+	handler.Register(&commands.Object{})
 
-	handler.RegisterHandlers(session)
+	handler.Setup(session)
 }

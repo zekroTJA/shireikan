@@ -9,6 +9,7 @@ import (
 	"sync"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/sarulabs/di/v2"
 )
 
 // ErrorType is the type of error occurred in
@@ -40,6 +41,10 @@ type Config struct {
 	UseDefaultHelpCommand bool   `json:"use_default_help_command"` // Whether or not to use default help command
 	DeleteMessageAfter    bool   `json:"delete_message_after"`     // Delete command message after command has processed
 
+	// Optionally, you can pass a di.Container to obtain
+	// instances from in the command context.
+	ObjectContainer di.Container `json:"-"`
+
 	// OnError is called when the command handler failed
 	// or retrieved an error form a middleware or command
 	// exec handler.
@@ -67,14 +72,31 @@ type Handler interface {
 	// Command instance.
 	RegisterCommand(cmd Command)
 
+	// Register is shorthand for RegisterMiddleware
+	// or RegisterCommand and automatically choses
+	// depending on the implementation the required
+	// registration method.
+	//
+	// Panics if an instance is passed which neither
+	// implements Command nor Middleware interface.
+	Register(v interface{})
+
 	// RegisterMiddleware registers the
 	// passed middleware instance.
 	RegisterMiddleware(mw Middleware)
 
+	// RegisterHandlers IS DEPRECATED!
+	// Please use Setup(*Session) instead!
+	//
 	// RegisterHandlers registers the message
 	// handlers to the passed discordgo.Session
 	// which are used to handle and parse commands.
 	RegisterHandlers(session *discordgo.Session)
+
+	// Setup registers the message handlers to
+	// the passed discordgo.Session which are
+	// used to handle and parse commands.
+	Setup(session *discordgo.Session)
 
 	// GetConfig returns the specified config
 	// object which was specified on intialization.
@@ -97,6 +119,11 @@ type Handler interface {
 	// global object map by given key.
 	GetObject(key string) interface{}
 
+	// SetObject IS DEPRECTAED!
+	// Pass a di.Container in the instance to provide
+	// object instances via the handler to the command
+	// execution context.
+	//
 	// SetObject sets a value to the handlers global
 	// object map by given key.
 	SetObject(key string, val interface{})
@@ -104,16 +131,19 @@ type Handler interface {
 
 // handler is the default implementation of Handler.
 type handler struct {
-	config       *Config
-	cmdMap       map[string]Command
-	cmdInstances []Command
-	middlewares  []Middleware
-	objectMap    *sync.Map
+	config          *Config
+	cmdMap          map[string]Command
+	cmdInstances    []Command
+	middlewares     []Middleware
+	objectContainer di.Container
+
+	// DEPRECATED: will be removed on next update!
+	objectMap *sync.Map
 }
 
-// NewHandler returns a new instance of the default
+// New returns a new instance of the default
 // command Handler implementation.
-func NewHandler(cfg *Config) Handler {
+func New(cfg *Config) Handler {
 	if cfg.OnError == nil {
 		cfg.OnError = func(Context, ErrorType, error) {}
 	}
@@ -125,10 +155,16 @@ func NewHandler(cfg *Config) Handler {
 	}
 
 	handler := &handler{
-		config:       cfg,
-		cmdMap:       make(map[string]Command),
-		cmdInstances: make([]Command, 0),
-		objectMap:    &sync.Map{},
+		config:          cfg,
+		cmdMap:          make(map[string]Command),
+		cmdInstances:    make([]Command, 0),
+		objectContainer: cfg.ObjectContainer,
+		objectMap:       &sync.Map{},
+	}
+
+	if handler.objectContainer == nil {
+		builder, _ := di.NewBuilder()
+		handler.objectContainer = builder.Build()
 	}
 
 	if cfg.UseDefaultHelpCommand {
@@ -136,6 +172,17 @@ func NewHandler(cfg *Config) Handler {
 	}
 
 	return handler
+}
+
+func (h *handler) Register(v interface{}) {
+	switch vi := v.(type) {
+	case Command:
+		h.RegisterCommand(vi)
+	case Middleware:
+		h.RegisterMiddleware(vi)
+	default:
+		panic("instance does neither implement Command nor Middleware interface")
+	}
 }
 
 func (h *handler) RegisterCommand(cmd Command) {
@@ -155,7 +202,7 @@ func (h *handler) RegisterMiddleware(mw Middleware) {
 	h.middlewares = append(h.middlewares, mw)
 }
 
-func (h *handler) RegisterHandlers(session *discordgo.Session) {
+func (h *handler) Setup(session *discordgo.Session) {
 	session.AddHandler(func(s *discordgo.Session, e *discordgo.MessageCreate) {
 		h.messageHandler(s, e.Message, false)
 	})
@@ -189,7 +236,11 @@ func (h *handler) GetCommand(invoke string) (Command, bool) {
 }
 
 func (h *handler) GetObject(key string) interface{} {
-	val, _ := h.objectMap.Load(key)
+	val, err := h.objectContainer.SafeGet(key)
+	if err != nil {
+		val, _ = h.objectMap.Load(key)
+	}
+
 	return val
 }
 
@@ -213,6 +264,7 @@ func (h *handler) messageHandler(s *discordgo.Session, msg *discordgo.Message, i
 	}
 
 	ctx := &context{
+		handler: h,
 		session: s,
 		message: msg,
 		member:  msg.Member,
@@ -291,9 +343,6 @@ func (h *handler) messageHandler(s *discordgo.Session, msg *discordgo.Message, i
 		h.config.OnError(ctx, ErrTypNotExecutableInDM, ErrCommandNotExecutableInDMs)
 		return
 	}
-
-	ctx.objectMap = &sync.Map{}
-	ctx.SetObject(ObjectMapKeyHandler, h)
 
 	if !h.executeMiddlewares(cmd, ctx, LayerBeforeCommand) {
 		return

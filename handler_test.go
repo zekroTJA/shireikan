@@ -9,15 +9,54 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func TestHandlerNewHandler(t *testing.T) {
-	h := NewHandler(makeConfig())
+func TestHandlerNew(t *testing.T) {
+	h := New(makeConfig())
 	if h == nil {
 		t.Error("recovered handler instance is nil")
 	}
 }
 
+func TestHandlerRegister(t *testing.T) {
+	h := New(makeConfig())
+
+	cmdInstance := &testCmd{}
+	h.Register(cmdInstance)
+
+	if h.(*handler).cmdMap["ping"] != cmdInstance {
+		t.Error("command instance was not registered correctly")
+	}
+
+	if h.(*handler).cmdMap["p"] != cmdInstance {
+		t.Error("command instance was not registered correctly")
+	}
+
+	h = New(makeConfig())
+	mwInstance := &testMiddleware{}
+	h.Register(mwInstance)
+
+	if len(h.(*handler).middlewares) == 0 {
+		t.Error("middleware did not got registered")
+	}
+
+	if h.(*handler).middlewares[0] != mwInstance {
+		t.Error("recovered middleware returned false")
+	}
+
+	func() {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Errorf("registering invalid instance did not panic")
+			}
+		}()
+
+		h := New(makeConfig())
+		h.Register("invalid")
+	}()
+
+}
+
 func TestHandlerRegisterCommand(t *testing.T) {
-	h := NewHandler(makeConfig())
+	h := New(makeConfig())
 
 	cmdInstance := &testCmd{}
 	h.RegisterCommand(cmdInstance)
@@ -32,7 +71,7 @@ func TestHandlerRegisterCommand(t *testing.T) {
 }
 
 func TestHandlerRegisterMiddleware(t *testing.T) {
-	h := NewHandler(makeConfig())
+	h := New(makeConfig())
 
 	mwInstance := &testMiddleware{}
 	h.RegisterMiddleware(mwInstance)
@@ -46,17 +85,17 @@ func TestHandlerRegisterMiddleware(t *testing.T) {
 	}
 }
 
-func TestHandlerRegisterHandlers(t *testing.T) {
-	h := NewHandler(makeConfig())
+func TestHandlerSetup(t *testing.T) {
+	h := New(makeConfig())
 
 	session, _ := discordgo.New("")
 
-	h.RegisterHandlers(session)
+	h.Setup(session)
 }
 
 func TestHandlerGetConfig(t *testing.T) {
 	cfg := makeConfig()
-	h := NewHandler(cfg)
+	h := New(cfg)
 
 	if h.GetConfig() != cfg {
 		t.Error("recovered config is invalid")
@@ -64,7 +103,7 @@ func TestHandlerGetConfig(t *testing.T) {
 }
 
 func TestHandlerGetCommandMap(t *testing.T) {
-	h := NewHandler(makeConfig())
+	h := New(makeConfig())
 
 	cmdInstance := &testCmd{}
 	h.RegisterCommand(cmdInstance)
@@ -81,7 +120,7 @@ func TestHandlerGetCommandMap(t *testing.T) {
 }
 
 func TestHandlerGetCommandInstances(t *testing.T) {
-	h := NewHandler(makeConfig())
+	h := New(makeConfig())
 
 	cmdInstance := &testCmd{}
 	h.RegisterCommand(cmdInstance)
@@ -98,7 +137,7 @@ func TestHandlerGetCommandInstances(t *testing.T) {
 }
 
 func TestHandlerGetCommand(t *testing.T) {
-	h := NewHandler(makeConfig())
+	h := New(makeConfig())
 
 	cmdInstance := &testCmd{}
 	h.RegisterCommand(cmdInstance)
@@ -113,7 +152,7 @@ func TestHandlerGetCommand(t *testing.T) {
 }
 
 func TestHandlerSetObject(t *testing.T) {
-	h := NewHandler(makeConfig())
+	h := New(makeConfig())
 
 	h.SetObject("test", 123)
 
@@ -127,7 +166,7 @@ func TestHandlerSetObject(t *testing.T) {
 }
 
 func TestHandlerGetObject(t *testing.T) {
-	h := NewHandler(makeConfig())
+	h := New(makeConfig())
 
 	h.(*handler).objectMap.Store("test", 456)
 
@@ -164,7 +203,7 @@ func TestHandlerMiddleware(t *testing.T) {
 	cmd := &testCmd{}
 	cfg := makeConfig()
 	cfg.DeleteMessageAfter = false
-	h := NewHandler(cfg)
+	h := New(cfg)
 	h.RegisterCommand(cmd)
 
 	mwBefore := &testMiddleware{}
@@ -261,7 +300,7 @@ func testMessageHandler(t *testing.T,
 	cExit := make(chan bool, 1)
 
 	cmd := &testCmd{}
-	h := NewHandler(makeConfig())
+	h := New(makeConfig())
 	h.RegisterCommand(cmd)
 
 	msg := &discordgo.Message{
