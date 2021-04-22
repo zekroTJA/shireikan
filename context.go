@@ -128,10 +128,6 @@ func (ctx *context) GetObject(key string) (val interface{}) {
 }
 
 func (ctx *context) SetObject(key string, val interface{}) {
-	if ctx.objectMap == nil {
-		ctx.objectMap = &sync.Map{}
-	}
-
 	ctx.objectMap.Store(key, val)
 }
 

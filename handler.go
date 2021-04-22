@@ -336,16 +336,16 @@ func (h *handler) messageHandler(s *discordgo.Session, msg *discordgo.Message, i
 		return
 	}
 
-	if !h.executeMiddlewares(cmd, ctx, LayerBeforeCommand) {
-		return
-	}
-
 	ctx.objectMap = h.objectMaps.Get().(*sync.Map)
 	defer func() {
 		clearMap(ctx.objectMap)
 		h.objectMaps.Put(ctx.objectMap)
 	}()
 	ctx.SetObject(ObjectMapKeyHandler, h)
+
+	if !h.executeMiddlewares(cmd, ctx, LayerBeforeCommand) {
+		return
+	}
 
 	if err = cmd.Exec(ctx); err != nil {
 		h.config.OnError(ctx, ErrTypCommandExec, err)
