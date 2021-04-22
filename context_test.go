@@ -210,6 +210,7 @@ func makeContext(initObjectMap bool) *context {
 				ID: "test_user",
 			},
 		},
+		objectMap: &sync.Map{},
 	}
 
 	if initObjectMap {
