@@ -11,6 +11,7 @@ import (
 // created which is passed to middleware and
 // command handlers.
 type Context interface {
+	ObjectMap
 
 	// GetSession returns the current discordgo.Session.
 	GetSession() *discordgo.Session
@@ -48,21 +49,6 @@ type Context interface {
 	// invoked the command was a
 	// discordgo.MessageUpdate event.
 	IsEdit() bool
-
-	// GetObject tries to retrieve an object from the
-	// context's object map. The retrieved value
-	// is returned. If no value could be retrieved,
-	// nil is returned.
-	//
-	// This function must return a value when it
-	// is not available in the contexts object
-	// map but available in the command handlers
-	// global object map.
-	GetObject(key string) interface{}
-
-	// SetObject sets an object or value to the context's
-	// object map with the passed key.
-	SetObject(key string, val interface{})
 
 	// Reply sends a message with the passed content
 	// to the channel where the command was sent into.

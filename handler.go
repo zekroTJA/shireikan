@@ -67,6 +67,7 @@ type Config struct {
 
 // Handler specifies a command register and handler.
 type Handler interface {
+	ReadonlyObjectMap
 
 	// Register is shorthand for RegisterMiddleware
 	// or RegisterCommand and automatically choses
@@ -114,19 +115,6 @@ type Handler interface {
 	// the command register by invoke. If the
 	// command could not be found, false is returned.
 	GetCommand(invoke string) (Command, bool)
-
-	// GetObject returns a value from the handlers
-	// global object map by given key.
-	GetObject(key string) interface{}
-
-	// SetObject IS DEPRECTAED!
-	// Pass a di.Container in the instance to provide
-	// object instances via the handler to the command
-	// execution context.
-	//
-	// SetObject sets a value to the handlers global
-	// object map by given key.
-	SetObject(key string, val interface{})
 }
 
 // handler is the default implementation of Handler.
