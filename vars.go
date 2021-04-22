@@ -3,7 +3,7 @@ package shireikan
 import "errors"
 
 const (
-	VERSION = "0.2.0" // The package version.
+	VERSION = "0.6.0" // The package version.
 
 	ObjectMapKeyHandler = "cmdhandler" // Handler instance object map key.
 )
