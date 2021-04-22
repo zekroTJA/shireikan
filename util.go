@@ -2,6 +2,7 @@ package shireikan
 
 import (
 	"strings"
+	"sync"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -31,4 +32,11 @@ func hasPrefixMention(s *discordgo.Session, content string) (ok bool, prefix str
 	prefix = content[0 : ci+1]
 
 	return
+}
+
+func clearMap(m *sync.Map) {
+	m.Range(func(key, _ interface{}) bool {
+		m.Delete(key)
+		return true
+	})
 }

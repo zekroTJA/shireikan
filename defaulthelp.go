@@ -46,7 +46,7 @@ func (c *defaultHelpCommand) Exec(ctx Context) error {
 		Fields: make([]*discordgo.MessageEmbedField, 0),
 	}
 
-	handler, _ := ctx.GetObject("cmdhandler").(Handler)
+	handler, _ := ctx.GetObject(ObjectMapKeyHandler).(Handler)
 
 	if len(ctx.GetArgs()) == 0 {
 		cmds := make(map[string][]Command)

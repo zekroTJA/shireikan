@@ -217,8 +217,11 @@ func makeContext(initObjectMap bool) *context {
 		b.Set("test_handler", "test_value")
 
 		handler := &handler{
-			objectMap:       &sync.Map{},
 			objectContainer: b.Build(),
+			objectMaps: &sync.Pool{
+				New: func() interface{} { return &sync.Map{} },
+			},
+			objectMap: &sync.Map{},
 		}
 		ctx.handler = handler
 	}

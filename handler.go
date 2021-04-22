@@ -136,6 +136,7 @@ type handler struct {
 	cmdInstances    []Command
 	middlewares     []Middleware
 	objectContainer di.Container
+	objectMaps      *sync.Pool
 
 	// DEPRECATED: will be removed on next update!
 	objectMap *sync.Map
@@ -159,7 +160,10 @@ func New(cfg *Config) Handler {
 		cmdMap:          make(map[string]Command),
 		cmdInstances:    make([]Command, 0),
 		objectContainer: cfg.ObjectContainer,
-		objectMap:       &sync.Map{},
+		objectMaps: &sync.Pool{
+			New: func() interface{} { return &sync.Map{} },
+		},
+		objectMap: &sync.Map{},
 	}
 
 	if handler.objectContainer == nil {
@@ -347,6 +351,13 @@ func (h *handler) messageHandler(s *discordgo.Session, msg *discordgo.Message, i
 	if !h.executeMiddlewares(cmd, ctx, LayerBeforeCommand) {
 		return
 	}
+
+	ctx.objectMap = h.objectMaps.Get().(*sync.Map)
+	defer func() {
+		clearMap(ctx.objectMap)
+		h.objectMaps.Put(ctx.objectMap)
+	}()
+	ctx.SetObject(ObjectMapKeyHandler, h)
 
 	if err = cmd.Exec(ctx); err != nil {
 		h.config.OnError(ctx, ErrTypCommandExec, err)
