@@ -16,12 +16,15 @@ type Limiter struct {
 // NewLimiter initializes a new limiter with the
 // given burst and restoration values.
 func NewLimiter(burst int, restoration time.Duration) *Limiter {
-	return &Limiter{
-		burst:          burst,
-		restoration:    restoration,
-		tokens:         burst,
-		lastActivation: time.Time{},
-	}
+	return new(Limiter).setParams(burst, restoration)
+}
+
+func (l *Limiter) setParams(burst int, restoration time.Duration) *Limiter {
+	l.burst = burst
+	l.restoration = restoration
+	l.tokens = burst
+	l.lastActivation = time.Time{}
+	return l
 }
 
 // Take returns true when a token was available

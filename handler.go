@@ -124,7 +124,7 @@ type handler struct {
 	cmdInstances    []Command
 	middlewares     []Middleware
 	objectContainer di.Container
-	objectMaps      *sync.Pool
+	ctxPool         *sync.Pool
 
 	// DEPRECATED: will be removed on next update!
 	objectMap *sync.Map
@@ -148,8 +148,12 @@ func New(cfg *Config) Handler {
 		cmdMap:          make(map[string]Command),
 		cmdInstances:    make([]Command, 0),
 		objectContainer: cfg.ObjectContainer,
-		objectMaps: &sync.Pool{
-			New: func() interface{} { return &sync.Map{} },
+		ctxPool: &sync.Pool{
+			New: func() interface{} {
+				return &context{
+					objectMap: &sync.Map{},
+				}
+			},
 		},
 		objectMap: &sync.Map{},
 	}
@@ -255,13 +259,16 @@ func (h *handler) messageHandler(s *discordgo.Session, msg *discordgo.Message, i
 		return
 	}
 
-	ctx := &context{
-		handler: h,
-		session: s,
-		message: msg,
-		member:  msg.Member,
-		isEdit:  isEdit,
-	}
+	ctx := h.ctxPool.Get().(*context)
+	ctx.handler = h
+	ctx.session = s
+	ctx.message = msg
+	ctx.member = msg.Member
+	ctx.isEdit = isEdit
+	defer func() {
+		clearMap(ctx.objectMap)
+		h.ctxPool.Put(ctx)
+	}()
 
 	var err error
 
@@ -336,11 +343,6 @@ func (h *handler) messageHandler(s *discordgo.Session, msg *discordgo.Message, i
 		return
 	}
 
-	ctx.objectMap = h.objectMaps.Get().(*sync.Map)
-	defer func() {
-		clearMap(ctx.objectMap)
-		h.objectMaps.Put(ctx.objectMap)
-	}()
 	ctx.SetObject(ObjectMapKeyHandler, h)
 
 	if !h.executeMiddlewares(cmd, ctx, LayerBeforeCommand) {

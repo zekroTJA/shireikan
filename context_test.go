@@ -219,8 +219,12 @@ func makeContext(initObjectMap bool) *context {
 
 		handler := &handler{
 			objectContainer: b.Build(),
-			objectMaps: &sync.Pool{
-				New: func() interface{} { return &sync.Map{} },
+			ctxPool: &sync.Pool{
+				New: func() interface{} {
+					return &context{
+						objectMap: &sync.Map{},
+					}
+				},
 			},
 			objectMap: &sync.Map{},
 		}
