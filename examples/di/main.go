@@ -6,11 +6,11 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/bwmarrin/discordgo"
 	"github.com/sarulabs/di/v2"
 	"github.com/zekroTJA/shireikan"
 	"github.com/zekroTJA/shireikan/examples/di/commands"
 	"github.com/zekroTJA/shireikan/examples/di/database"
+	"github.com/zekrotja/discordgo"
 )
 
 func main() {

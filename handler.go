@@ -8,8 +8,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/bwmarrin/discordgo"
 	"github.com/sarulabs/di/v2"
+	"github.com/zekrotja/discordgo"
 )
 
 // ErrorType is the type of error occurred in

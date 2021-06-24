@@ -1,6 +1,6 @@
 package shireikan
 
-import "github.com/bwmarrin/discordgo"
+import "github.com/zekrotja/discordgo"
 
 // NewHandler IS DEPRECATED!
 // Please use New(*Config) instead!

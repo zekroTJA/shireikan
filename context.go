@@ -3,7 +3,7 @@ package shireikan
 import (
 	"sync"
 
-	"github.com/bwmarrin/discordgo"
+	"github.com/zekrotja/discordgo"
 )
 
 // Context wraps information about a message

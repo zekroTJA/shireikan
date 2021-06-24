@@ -4,7 +4,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/bwmarrin/discordgo"
+	"github.com/zekrotja/discordgo"
 )
 
 const minPrefixLen = 12

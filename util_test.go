@@ -3,7 +3,7 @@ package shireikan
 import (
 	"testing"
 
-	"github.com/bwmarrin/discordgo"
+	"github.com/zekrotja/discordgo"
 )
 
 func TestHasPrefixMention(t *testing.T) {

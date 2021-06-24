@@ -22,7 +22,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/bwmarrin/discordgo"
+	"github.com/zekrotja/discordgo"
 	"github.com/zekroTJA/shireikan"
 )
 

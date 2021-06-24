@@ -3,8 +3,8 @@ package ratelimit
 import (
 	"fmt"
 
-	"github.com/bwmarrin/discordgo"
 	"github.com/zekroTJA/shireikan"
+	"github.com/zekrotja/discordgo"
 )
 
 // Middleware command implements the ratelimit middleware.

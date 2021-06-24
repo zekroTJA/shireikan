@@ -6,10 +6,10 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/bwmarrin/discordgo"
 	"github.com/zekroTJA/shireikan"
 	"github.com/zekroTJA/shireikan/examples/basic/commands"
 	"github.com/zekroTJA/shireikan/examples/basic/middleware"
+	"github.com/zekrotja/discordgo"
 )
 
 func main() {

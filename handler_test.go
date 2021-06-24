@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/bwmarrin/discordgo"
+	"github.com/zekrotja/discordgo"
 )
 
 func TestHandlerNew(t *testing.T) {

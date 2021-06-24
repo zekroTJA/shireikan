@@ -5,8 +5,8 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/bwmarrin/discordgo"
 	"github.com/sarulabs/di/v2"
+	"github.com/zekrotja/discordgo"
 )
 
 func TestContextGetSession(t *testing.T) {
