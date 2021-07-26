@@ -10,6 +10,7 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/sarulabs/di/v2"
+	"github.com/zekroTJA/shireikan/state"
 )
 
 // ErrorType is the type of error occurred in
@@ -25,6 +26,7 @@ const (
 	ErrTypMiddleware                            // Middleware handler returned an error
 	ErrTypCommandExec                           // Command handler returned an error
 	ErrTypDeleteCommandMessage                  // Deleting command message failed
+	ErrTypeState                                // State action failed
 )
 
 var (
@@ -63,6 +65,8 @@ type Config struct {
 	// An error is only returned when the retrieving of the
 	// guild prefix failed unexpectedly.
 	GuildPrefixGetter func(guildID string) (string, error)
+
+	State state.State
 }
 
 // Handler specifies a command register and handler.
@@ -125,6 +129,7 @@ type handler struct {
 	middlewares     []Middleware
 	objectContainer di.Container
 	ctxPool         *sync.Pool
+	state           state.State
 
 	// DEPRECATED: will be removed on next update!
 	objectMap *sync.Map
@@ -143,6 +148,10 @@ func New(cfg *Config) Handler {
 		}
 	}
 
+	if cfg.State == nil {
+		cfg.State = state.NewInternal()
+	}
+
 	handler := &handler{
 		config:          cfg,
 		cmdMap:          make(map[string]Command),
@@ -156,6 +165,7 @@ func New(cfg *Config) Handler {
 			},
 		},
 		objectMap: &sync.Map{},
+		state:     cfg.State,
 	}
 
 	if handler.objectContainer == nil {
@@ -247,18 +257,6 @@ func (h *handler) SetObject(key string, val interface{}) {
 // messageHandler is called from the message create and
 // message update events of discordgo.
 func (h *handler) messageHandler(s *discordgo.Session, msg *discordgo.Message, isEdit bool) {
-	if msg.Author == nil || msg.Author.ID == s.State.User.ID {
-		return
-	}
-
-	if len(msg.Content) < 1 {
-		return
-	}
-
-	if !h.config.AllowBots && msg.Author.Bot {
-		return
-	}
-
 	ctx := h.ctxPool.Get().(*context)
 	ctx.handler = h
 	ctx.session = s
@@ -270,12 +268,28 @@ func (h *handler) messageHandler(s *discordgo.Session, msg *discordgo.Message, i
 		h.ctxPool.Put(ctx)
 	}()
 
-	var err error
+	self, err := h.state.SelfUser(s)
+	if err != nil {
+		h.config.OnError(ctx, ErrTypeState, err)
+		return
+	}
+
+	if msg.Author == nil || msg.Author.ID == self.ID {
+		return
+	}
+
+	if len(msg.Content) < 1 {
+		return
+	}
+
+	if !h.config.AllowBots && msg.Author.Bot {
+		return
+	}
 
 	usedPrefix := ""
 	if strings.HasPrefix(msg.Content, h.config.GeneralPrefix) {
 		usedPrefix = h.config.GeneralPrefix
-	} else if ok, prefix := hasPrefixMention(s, msg.Content); ok {
+	} else if ok, prefix := hasPrefixMention(self.ID, msg.Content); ok {
 		usedPrefix = prefix
 	} else {
 		guildPrefix, err := h.config.GuildPrefixGetter(msg.GuildID)

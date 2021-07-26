@@ -3,13 +3,11 @@ package shireikan
 import (
 	"strings"
 	"sync"
-
-	"github.com/bwmarrin/discordgo"
 )
 
 const minPrefixLen = 12
 
-func hasPrefixMention(s *discordgo.Session, content string) (ok bool, prefix string) {
+func hasPrefixMention(selfUserID string, content string) (ok bool, prefix string) {
 	if len(content) < minPrefixLen || content[0] != '<' || content[1] != '@' {
 		return
 	}
@@ -24,7 +22,7 @@ func hasPrefixMention(s *discordgo.Session, content string) (ok bool, prefix str
 		return
 	}
 
-	if content[cursor:ci] != s.State.User.ID {
+	if content[cursor:ci] != selfUserID {
 		return
 	}
 

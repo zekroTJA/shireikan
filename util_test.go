@@ -2,25 +2,13 @@ package shireikan
 
 import (
 	"testing"
-
-	"github.com/bwmarrin/discordgo"
 )
 
 func TestHasPrefixMention(t *testing.T) {
 	const userID = "123456789012345"
 
-	s := &discordgo.Session{
-		State: &discordgo.State{
-			Ready: discordgo.Ready{
-				User: &discordgo.User{
-					ID: userID,
-				},
-			},
-		},
-	}
-
 	testPrefix := func(msg, prefix string, ok bool) {
-		rOk, rPrefix := hasPrefixMention(s, msg)
+		rOk, rPrefix := hasPrefixMention(userID, msg)
 		if rOk != ok {
 			t.Fatalf("ok was %t (expected: %t)", rOk, ok)
 		}
