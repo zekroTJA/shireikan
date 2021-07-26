@@ -1,4 +1,3 @@
-v0.6.0
+v0.7.0
 
-- shireikan now makes use of `sync.Pool` for context and rate limiter instances which might make it more performant when handling a lot of commands.
-- Fixed registration of command handler instance in context object map. [#3]
+- You can now specify a custom implementation to be used for state caching in the config (`Config.State`). This allows the usage of custom state implementations and defaults to the internal implementation of DiscordGo (`discordgo.State`).
