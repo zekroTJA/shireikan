@@ -4,8 +4,11 @@ import "github.com/bwmarrin/discordgo"
 
 var _ State = (*Internal)(nil)
 
+// Internal implements the state Interface for
+// the internal discordgo.State instance.
 type Internal struct{}
 
+// NewInternal returns a new instance of Internal.
 func NewInternal() *Internal {
 	return &Internal{}
 }

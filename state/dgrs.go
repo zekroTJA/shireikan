@@ -7,10 +7,13 @@ import (
 
 var _ State = (*Dgrs)(nil)
 
+// Dgrs is the State implementation for zekrotja/dgrs.
 type Dgrs struct {
 	st *dgrs.State
 }
 
+// NewDgrs returns a new instance of Dgrs using the
+// passed dgrs.State.
 func NewDgrs(st *dgrs.State) *Dgrs {
 	return &Dgrs{st}
 }
