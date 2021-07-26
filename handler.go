@@ -66,6 +66,13 @@ type Config struct {
 	// guild prefix failed unexpectedly.
 	GuildPrefixGetter func(guildID string) (string, error)
 
+	// State is the used implementation of a state cache.
+	//
+	// Defautly, the internal discordgo.State implementation
+	// (state.Internal) is used. If you are using zekrotja/dgrs,
+	// you can use the state.Dgrs state implementation. You can
+	// also create and use a custom state implementation by
+	// implementing the state.State interface.
 	State state.State
 }
 
