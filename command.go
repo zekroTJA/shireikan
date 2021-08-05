@@ -12,7 +12,7 @@ type SubPermission struct {
 // command struct which can be registered
 // in the CommandHandler.
 type Command interface {
-	// GetInvokes returns the unique strings udes to
+	// GetInvokes returns the unique strings used to
 	// call the command. The first invoke is the
 	// primary command invoke and each following is
 	// treated as command alias.
